@@ -26,26 +26,46 @@
 - (id)initWithErrorCellStyle:(AEErrorCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     self = [super initWithStyle:UITableViewCellStyleDefault reuseIdentifier:reuseIdentifier];
     if (self) {
-        _descriptionLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 40, 280, 36)];
+        CGRect contentBounds = [[self contentView] bounds];
+        
+        _descriptionLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 40, contentBounds.size.width - 40, 36)];
         [_descriptionLabel setFont:[UIFont boldSystemFontOfSize:15.0]];
         [_descriptionLabel setTextColor:[UIColor grayColor]];
+        [_descriptionLabel setShadowColor:[UIColor whiteColor]];
+        [_descriptionLabel setShadowOffset:CGSizeMake(0, 1)];
         [_descriptionLabel setNumberOfLines:2];
         [_descriptionLabel setTextAlignment:UITextAlignmentCenter];
+        [_descriptionLabel setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
+        [_descriptionLabel setBackgroundColor:[UIColor clearColor]];
+        [_descriptionLabel setOpaque:NO];
         [[self contentView] addSubview:_descriptionLabel];
         
-        _recoverySuggestionLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 88, 280, 48)];
+        _recoverySuggestionLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 88, contentBounds.size.width - 40, 48)];
         [_recoverySuggestionLabel setFont:[UIFont systemFontOfSize:15.0]];
         [_recoverySuggestionLabel setTextColor:[UIColor grayColor]];
+        [_recoverySuggestionLabel setShadowColor:[UIColor whiteColor]];
+        [_recoverySuggestionLabel setShadowOffset:CGSizeMake(0, 1)];
         [_recoverySuggestionLabel setNumberOfLines:3];
         [_recoverySuggestionLabel setTextAlignment:UITextAlignmentCenter];
+        [_recoverySuggestionLabel setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
+        [_recoverySuggestionLabel setBackgroundColor:[UIColor clearColor]];
+        [_recoverySuggestionLabel setOpaque:NO];
         [[self contentView] addSubview:_recoverySuggestionLabel];
         
         if (style == AEErrorCellStyleRetryButton) {
             _retryButton = [[UIButton buttonWithType:UIButtonTypeRoundedRect] retain];
-            [_retryButton setFrame:CGRectMake(40, 176, 240, 44)];
+            [_retryButton setFrame:CGRectMake(40, 176, contentBounds.size.width - 80, 44)];
             [_retryButton setTitle:NSLocalizedString(@"Retry", @"") forState:UIControlStateNormal];
+            [_retryButton setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
             [[self contentView] addSubview:_retryButton];
         }
+        
+        // Install a transparent, 0x0px background view so that the cell looks
+        // right in grouped table views.
+        UIView *backgroundView = [[[UIView alloc] initWithFrame:CGRectZero] autorelease];
+        [backgroundView setBackgroundColor:[UIColor clearColor]];
+        [backgroundView setOpaque:NO];
+        [self setBackgroundView:backgroundView];
         
         [self setSelectionStyle:UITableViewCellSelectionStyleNone];
     }
@@ -71,6 +91,20 @@
     } else {
         [_descriptionLabel setText:[error localizedDescription]];
         [_recoverySuggestionLabel setText:[error localizedRecoverySuggestion]];
+    }
+}
+
+#define kGroupedTextColor ([UIColor colorWithRed:0.298 green:0.337 blue:0.424 alpha:1.])
+
+- (void)willMoveToSuperview:(UIView *)newSuperview {
+    if ([newSuperview isKindOfClass:[UITableView class]]) {
+        if ( [(UITableView *)newSuperview style] == UITableViewStyleGrouped) {
+            [_descriptionLabel setTextColor:kGroupedTextColor];
+            [_recoverySuggestionLabel setTextColor:kGroupedTextColor];
+        } else {
+            [_descriptionLabel setTextColor:[UIColor grayColor]];
+            [_recoverySuggestionLabel setTextColor:[UIColor grayColor]];
+        }
     }
 }
 
